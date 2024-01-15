@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="azure_simple_email",
-    version="0.0.1",
+    version="0.0.3",
     author="Marco Pavanelli",
     author_email="marco.pavanelli@sasabz.it",
     description="This is an esperimental library to send email using Microsoft Graph API",
@@ -13,6 +13,10 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/marcotn/azure_simple_email",
     packages=setuptools.find_packages(),
+    install_requires=[
+        'msal',
+        'requests'
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
