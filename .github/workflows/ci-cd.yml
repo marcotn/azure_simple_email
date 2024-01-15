@@ -2,11 +2,10 @@
 name: publish-pypi
 
 on:
-  workflow_call:
-    inputs:
-      pypi_repository_url:
-        required: true
-        type: string
+  push:
+    branches: [ "main", "wip" ]
+  pull_request:
+    branches: [ "main" ]
     secrets:
       pypi_api_token:
         required: true
