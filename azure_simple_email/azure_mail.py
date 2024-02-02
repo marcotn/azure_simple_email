@@ -15,17 +15,14 @@ class AzureSendMail:
         self.to.append(recipient)
 
     def add_attachment(self, filename: str):
-        try:
-            b64_content = base64.b64encode(open(filename, 'rb').read())
-            mime_type = mimetypes.guess_type(filename)[0]
-            mime_type = mime_type if mime_type else ''
-            self.attachments.append(
-                {'@odata.type': '#microsoft.graph.fileAttachment',
-                 'ContentBytes': b64_content.decode('utf-8'),
-                 'ContentType': mime_type,
-                 'Name': filename})
-        except:
-            return False
+        b64_content = base64.b64encode(open(filename, 'rb').read())
+        mime_type = mimetypes.guess_type(filename)[0]
+        mime_type = mime_type if mime_type else ''
+        self.attachments.append(
+            {'@odata.type': '#microsoft.graph.fileAttachment',
+             'ContentBytes': b64_content.decode('utf-8'),
+             'ContentType': mime_type,
+             'Name': filename})
         return True
 
     def add_attachment_io(self, content: bytes, filename: str):
