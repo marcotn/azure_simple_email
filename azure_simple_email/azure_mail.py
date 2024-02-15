@@ -3,7 +3,6 @@ import mimetypes
 import os
 import msal
 import requests
-
 class AzureSendMail:
 
     def __init__(self, user_id):
@@ -37,7 +36,13 @@ class AzureSendMail:
         return True
 
 
-    def send_email(self, subject: str, text: str):
+    def send_email(self, subject: str, text: str, content_type='Text'):
+        """Sends Out The actual email
+           Parameters:
+           subject string
+           test string
+           content_type string (either "text" ot "html")
+        """
         client_id = os.environ.get('AZURE_EMAIL_CLIENT_ID')
         client_secret = os.environ.get('AZURE_EMAIL_CLIENT_SECRET')
         authority = os.environ.get('AZURE_EMAIL_CLIENT_AUTHORITY')
@@ -60,7 +65,7 @@ class AzureSendMail:
         if "access_token" in result:
             endpoint = f'https://graph.microsoft.com/v1.0/users/{self.user_id}/sendMail'
             email_msg = {'Message': {'Subject': subject,
-                                     'Body': {'ContentType': 'Text', 'Content': text},
+                                     'Body': {'ContentType': content_type, 'Content': text},
                                      'ToRecipients': [{'EmailAddress': {'Address': _email}} for _email in self.to],
                                      'Attachments': self.attachments
                                      },
