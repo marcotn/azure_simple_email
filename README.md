@@ -17,8 +17,8 @@ The you call instantiate AzureSendEmail passing the sender's email as paramenter
 
 this is the example that I have tested here of course with different email address.
 
-azure_email = AzureSendMail(user_id='service@example.com')
+`azure_email = AzureSendMail(user_id='service@example.com')
 azure_email.add_recipient('marco@test.com')
 azure_email.add_attachment('../README.md')
 azure_email.send_email(subject='test message', text='Hi, we are testing this python tool')
-
+`
