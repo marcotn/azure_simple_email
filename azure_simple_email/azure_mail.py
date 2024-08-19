@@ -11,12 +11,20 @@ class AzureSendMail:
 
     def __init__(self, user_id):
         self.to = []
+        self.cc = []
+        self.bcc = []
         self.attachments = []
         self.user_id = user_id
         self.endpoint = f'https://graph.microsoft.com/v1.0/users/{self.user_id}/sendMail'
 
     def add_recipient(self, recipient: str):
         self.to.append(recipient)
+
+    def add_cc_recipient(self, recipient: str):
+        self.cc.append(recipient)
+
+    def add_ccn_recipient(self, recipient: str):
+        self.bcc.append(recipient)
 
     def add_attachment(self, filename: str):
         b64_content = base64.b64encode(open(filename, 'rb').read())
@@ -105,7 +113,9 @@ class AzureSendMail:
         if "access_token" in result:
             email_msg = {'Message': {'Subject': subject,
                                      'Body': {'ContentType': content_type, 'Content': text},
-                                     'ToRecipients': [{'EmailAddress': {'Address': _email}} for _email in self.to],
+                                     'toRecipients': [{'EmailAddress': {'Address': _email}} for _email in self.to],
+                                     'ccRecipients': [{'EmailAddress': {'Address': _email}} for _email in self.cc],
+                                     'bccRecipients': [{'EmailAddress': {'Address': _email}} for _email in self.bcc],
                                      'Attachments': self.attachments
                                      },
                          'SaveToSentItems': 'true'}
