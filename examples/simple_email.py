@@ -9,7 +9,7 @@ TEST_CCN_RECIPIENT = os.environ.get('TEST_BCC_RECIPIENT', 'marco@test.com')
 azure_email = AzureSendMail(user_id=TEST_SENDER)
 azure_email.add_recipient(TEST_RECIPIENT)
 azure_email.add_attachment('../README.md')
-azure_email.send_email(subject='test message', text='Hi, we are testing this python tool')
+azure_email.send_email(subject='test message', text='Hi, we are testing <h1>this<h1> python tool')
 
 #content_file = open("birthday.html", 'r')
 #_content = content_file.read()
@@ -24,5 +24,6 @@ azure_email.add_recipient(TEST_RECIPIENT)
 azure_email.add_cc_recipient(TEST_CC_RECIPIENT)
 azure_email.add_ccn_recipient(TEST_CCN_RECIPIENT)
 azure_email.add_attachment('../README.md')
-azure_email.send_email(subject='test message', text='Hi, we are testing this python tool')
-
+res = azure_email.send_email(subject='test message', text='Hi, we are testing <h3>this</h3> python tool',
+                             content_type='html')
+print(res)

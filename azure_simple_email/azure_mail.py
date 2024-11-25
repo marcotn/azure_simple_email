@@ -125,7 +125,7 @@ class AzureSendMail:
                 return {'result': 'ok'}
             else:
 
-                return {'result': 'ko', 'error': r.json()}
+                return {'result': 'ko', 'error': r.text}
         else:
             print(result.get("error"))
             print(result.get("error_description"))
