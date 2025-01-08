@@ -27,3 +27,9 @@ azure_email.add_attachment('../README.md')
 res = azure_email.send_email(subject='test message', text='Hi, we are testing <h3>this</h3> python tool',
                              content_type='html')
 print(res)
+
+print(os.getcwd())
+_html_content = open("html/test_email.html", "r").read()
+res_mime = azure_email.send_mail_mime_types(subject='test message', content=_html_content)
+print(res_mime)
+

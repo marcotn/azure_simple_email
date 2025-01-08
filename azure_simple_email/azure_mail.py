@@ -77,6 +77,8 @@ class AzureSendMail:
         _html = MIMEText(content, "html")
         message.attach(_html)
         message['to'] = self.to[0]
+        message['cc'] = ','.join(self.cc)
+        message['bcc'] = ','.join(self.bcc)
         message['from'] = sender
         message['subject'] = subject
         raw = base64.b64encode(message.as_bytes())
