@@ -15,7 +15,11 @@ class AzureSendMail:
         self.bcc = []
         self.attachments = []
         self.user_id = user_id
-        self.endpoint = f'https://graph.microsoft.com/v1.0/users/{self.user_id}/sendMail'
+        self.sender = user_id
+        #self.endpoint = f'https://graph.microsoft.com/v1.0/users/{self.sender}/sendMail'
+
+    def get_endpoint(self):
+        return f'https://graph.microsoft.com/v1.0/users/{self.sender}/sendMail'
 
     def add_recipient(self, recipient: str):
         self.to.append(recipient)
@@ -71,7 +75,7 @@ class AzureSendMail:
 
         return result
 
-    def create_message(self, sender, subject, content):
+    def create_message(self, subject, content):
 
         message = MIMEMultipart("alternative")
         _html = MIMEText(content, "html")
@@ -79,7 +83,7 @@ class AzureSendMail:
         message['to'] = self.to[0]
         message['cc'] = ','.join(self.cc)
         message['bcc'] = ','.join(self.bcc)
-        message['from'] = sender
+        message['from'] = self.sender
         message['subject'] = subject
         raw = base64.b64encode(message.as_bytes())
         #raw = base64.urlsafe_b64encode(message.as_bytes())
@@ -89,10 +93,10 @@ class AzureSendMail:
     def send_mail_mime_types(self, subject: str, content: str):
         result = self.get_token()
         if "access_token" in result:
-            email_msg = self.create_message(sender=self.user_id,  subject=subject, content=content)
+            email_msg = self.create_message(subject=subject, content=content)
             headers = {'Authorization': 'Bearer ' + result['access_token']}
             headers['Content-Type'] = 'text/plain'
-            r = requests.post(self.endpoint,
+            r = requests.post(self.get_endpoint(),
                           headers=headers, data=email_msg)
             if r.ok:
                 return {'result': 'ok'}
@@ -115,13 +119,14 @@ class AzureSendMail:
         if "access_token" in result:
             email_msg = {'Message': {'Subject': subject,
                                      'Body': {'ContentType': content_type, 'Content': text},
+                                     'From': {'EmailAddress': {'Address': self.sender}},
                                      'toRecipients': [{'EmailAddress': {'Address': _email}} for _email in self.to],
                                      'ccRecipients': [{'EmailAddress': {'Address': _email}} for _email in self.cc],
                                      'bccRecipients': [{'EmailAddress': {'Address': _email}} for _email in self.bcc],
                                      'Attachments': self.attachments
                                      },
                          'SaveToSentItems': 'true'}
-            r = requests.post(self.endpoint,
+            r = requests.post(self.get_endpoint(),
                               headers={'Authorization': 'Bearer ' + result['access_token']}, json=email_msg)
             if r.ok:
                 return {'result': 'ok'}
