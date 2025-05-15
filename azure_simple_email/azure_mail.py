@@ -1,12 +1,15 @@
 import base64
 import mimetypes
 import os
-from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
+import logging
 import msal
 import requests
+
+
+logger = logging.getLogger(__name__)
+
 class AzureSendMail:
 
     def __init__(self, user_id):
@@ -96,12 +99,15 @@ class AzureSendMail:
             email_msg = self.create_message(subject=subject, content=content)
             headers = {'Authorization': 'Bearer ' + result['access_token']}
             headers['Content-Type'] = 'text/plain'
-            r = requests.post(self.get_endpoint(),
-                          headers=headers, data=email_msg)
-            if r.ok:
-                return {'result': 'ok'}
+            if os.environ.get('DEBUG_DO_NOT_SEND', '0') == '1':
+                logger.info(email_msg)
             else:
-                return {'result': 'ko', 'error': r.json()}
+                r = requests.post(self.get_endpoint(),
+                              headers=headers, data=email_msg)
+                if r.ok:
+                    return {'result': 'ok'}
+                else:
+                    return {'result': 'ko', 'error': r.json()}
         else:
             print(result.get("error"))
             print(result.get("error_description"))
@@ -126,13 +132,15 @@ class AzureSendMail:
                                      'Attachments': self.attachments
                                      },
                          'SaveToSentItems': 'true'}
-            r = requests.post(self.get_endpoint(),
-                              headers={'Authorization': 'Bearer ' + result['access_token']}, json=email_msg)
-            if r.ok:
+            if os.environ.get('DEBUG_DO_NOT_SEND', '0') == '1':
+                logger.info(email_msg)
                 return {'result': 'ok'}
             else:
-
-                return {'result': 'ko', 'error': r.text}
+                r = requests.post(self.get_endpoint(), headers={'Authorization': 'Bearer ' + result['access_token']}, json=email_msg)
+                if r.ok:
+                    return {'result': 'ok'}
+                else:
+                    return {'result': 'ko', 'error': r.text}
         else:
             print(result.get("error"))
             print(result.get("error_description"))
