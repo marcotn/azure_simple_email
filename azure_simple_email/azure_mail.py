@@ -20,6 +20,8 @@ class AzureSendMail:
         self.user_id = user_id
         self.sender = user_id
         #self.endpoint = f'https://graph.microsoft.com/v1.0/users/{self.sender}/sendMail'
+        self.DEBUG_MODE = os.environ.get("DEBUG_MODE", None) != None
+        self.DEBUG_EMAIL = os.environ.get("DEBUG_EMAIL", 'marco.pavanelli@sasabz.it')
 
     def get_endpoint(self):
         return f'https://graph.microsoft.com/v1.0/users/{self.sender}/sendMail'
@@ -83,11 +85,18 @@ class AzureSendMail:
         message = MIMEMultipart("alternative")
         _html = MIMEText(content, "html")
         message.attach(_html)
-        message['to'] = self.to[0]
-        message['cc'] = ','.join(self.cc)
-        message['bcc'] = ','.join(self.bcc)
-        message['from'] = self.sender
-        message['subject'] = subject
+        if self.DEBUG_MODE:
+            message['to'] = self.DEBUG_EMAIL
+            debug_text = (f"to: {self.to[0]} \ncc: {self.cc} \nbcc: {self.bcc} \n from: {self.sender}"
+                          f"subject: {subject}")
+            debug_text = MIMEText(debug_text, "plain")
+            message.attach(debug_text)
+        else:
+            message['to'] = self.to[0]
+            message['cc'] = ','.join(self.cc)
+            message['bcc'] = ','.join(self.bcc)
+            message['from'] = self.sender
+            message['subject'] = subject
         raw = base64.b64encode(message.as_bytes())
         #raw = base64.urlsafe_b64encode(message.as_bytes())
         return raw.decode()
@@ -122,16 +131,30 @@ class AzureSendMail:
            content_type string (either "text" ot "html")
         """
         result = self.get_token()
+        toRecipients= [{'EmailAddress': {'Address': _email}} for _email in self.to]
+        ccRecipients= [{'EmailAddress': {'Address': _email}} for _email in self.cc]
+        bccRecipients= [{'EmailAddress': {'Address': _email}} for _email in self.bcc]
         if "access_token" in result:
-            email_msg = {'Message': {'Subject': subject,
-                                     'Body': {'ContentType': content_type, 'Content': text},
-                                     'From': {'EmailAddress': {'Address': self.sender}},
-                                     'toRecipients': [{'EmailAddress': {'Address': _email}} for _email in self.to],
-                                     'ccRecipients': [{'EmailAddress': {'Address': _email}} for _email in self.cc],
-                                     'bccRecipients': [{'EmailAddress': {'Address': _email}} for _email in self.bcc],
-                                     'Attachments': self.attachments
-                                     },
-                         'SaveToSentItems': 'true'}
+            if self.DEBUG_MODE:
+                body_debug = f"to: {toRecipients} \n cc: {ccRecipients} \n bcc: {bccRecipients}"
+                body_text = f"{body_debug} \n\n {text}"
+                email_msg = {'Message': {'Subject': subject,
+                                         'Body': {'ContentType': content_type, 'Content': body_text},
+                                         'From': {'EmailAddress': {'Address': self.sender}},
+                                         'toRecipients': [{'EmailAddress': {'Address': self.DEBUG_EMAIL}}],
+                                         'Attachments': self.attachments
+                                         },
+                             'SaveToSentItems': 'true'}
+            else:
+                email_msg = {'Message': {'Subject': subject,
+                                         'Body': {'ContentType': content_type, 'Content': text},
+                                         'From': {'EmailAddress': {'Address': self.sender}},
+                                         'toRecipients': toRecipients,
+                                         'ccRecipients': ccRecipients,
+                                         'bccRecipients': bccRecipients,
+                                         'Attachments': self.attachments
+                                         },
+                             'SaveToSentItems': 'true'}
             if os.environ.get('DEBUG_DO_NOT_SEND', '0') == '1':
                 logger.info(email_msg)
                 return {'result': 'ok'}
