@@ -14,6 +14,7 @@ class AzureSendMail:
 
     def __init__(self, user_id):
         self.to = []
+        self.reply_to = []
         self.cc = []
         self.bcc = []
         self.attachments = []
@@ -34,6 +35,9 @@ class AzureSendMail:
 
     def add_ccn_recipient(self, recipient: str):
         self.bcc.append(recipient)
+
+    def add_reply_to(self, reply_to: str):
+        self.reply_to.append(reply_to)
 
     def add_attachment(self, filename: str):
         b64_content = base64.b64encode(open(filename, 'rb').read())
@@ -95,6 +99,7 @@ class AzureSendMail:
             message['to'] = self.to[0]
             message['cc'] = ','.join(self.cc)
             message['bcc'] = ','.join(self.bcc)
+            message['reply-to'] = ','.join(self.reply_to)
             message['from'] = self.sender
             message['subject'] = subject
         raw = base64.b64encode(message.as_bytes())
@@ -131,6 +136,7 @@ class AzureSendMail:
            content_type string (either "text" ot "html")
         """
         result = self.get_token()
+        replyTo= [{'EmailAddress': {'Address': _email}} for _email in self.reply_to]
         toRecipients= [{'EmailAddress': {'Address': _email}} for _email in self.to]
         ccRecipients= [{'EmailAddress': {'Address': _email}} for _email in self.cc]
         bccRecipients= [{'EmailAddress': {'Address': _email}} for _email in self.bcc]
@@ -142,6 +148,7 @@ class AzureSendMail:
                                          'Body': {'ContentType': content_type, 'Content': body_text},
                                          'From': {'EmailAddress': {'Address': self.sender}},
                                          'toRecipients': [{'EmailAddress': {'Address': self.DEBUG_EMAIL}}],
+                                         'replyTo': replyTo,
                                          'Attachments': self.attachments
                                          },
                              'SaveToSentItems': 'true'}
@@ -152,6 +159,7 @@ class AzureSendMail:
                                          'toRecipients': toRecipients,
                                          'ccRecipients': ccRecipients,
                                          'bccRecipients': bccRecipients,
+                                         'replyTo': replyTo,
                                          'Attachments': self.attachments
                                          },
                              'SaveToSentItems': 'true'}
