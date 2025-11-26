@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="azure_simple_email",
-    version="0.1.9",
+    version="0.2.0",
     author="Marco Pavanelli",
     author_email="marco.pavanelli@sasabz.it",
     description="This is an experimental library to send email using Microsoft Graph API",

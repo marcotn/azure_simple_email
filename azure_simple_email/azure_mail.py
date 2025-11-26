@@ -23,6 +23,7 @@ class AzureSendMail:
         #self.endpoint = f'https://graph.microsoft.com/v1.0/users/{self.sender}/sendMail'
         self.DEBUG_MODE = os.environ.get("DEBUG_MODE", None) != None
         self.DEBUG_EMAIL = os.environ.get("DEBUG_EMAIL", 'marco.pavanelli@sasabz.it')
+        self.token = None
 
     def get_endpoint(self):
         return f'https://graph.microsoft.com/v1.0/users/{self.sender}/sendMail'
@@ -108,10 +109,11 @@ class AzureSendMail:
 
 
     def send_mail_mime_types(self, subject: str, content: str):
-        result = self.get_token()
-        if "access_token" in result:
+        if not self.token:
+            self.token = self.get_token()
+        if "access_token" in self.token:
             email_msg = self.create_message(subject=subject, content=content)
-            headers = {'Authorization': 'Bearer ' + result['access_token']}
+            headers = {'Authorization': 'Bearer ' + self.token['access_token']}
             headers['Content-Type'] = 'text/plain'
             if os.environ.get('DEBUG_DO_NOT_SEND', '0') == '1':
                 logger.info(email_msg)
@@ -123,9 +125,9 @@ class AzureSendMail:
                 else:
                     return {'result': 'ko', 'error': r.json()}
         else:
-            print(result.get("error"))
-            print(result.get("error_description"))
-            print(result.get("correlation_id"))
+            print(self.token("error"))
+            print(self.token.get("error_description"))
+            print(self.token.get("correlation_id"))
 
 
     def send_email(self, subject: str, text: str, content_type='Text'):
@@ -135,12 +137,13 @@ class AzureSendMail:
            test string
            content_type string (either "text" ot "html")
         """
-        result = self.get_token()
+        if not self.token:
+            self.token = self.get_token()
         replyTo= [{'EmailAddress': {'Address': _email}} for _email in self.reply_to]
         toRecipients= [{'EmailAddress': {'Address': _email}} for _email in self.to]
         ccRecipients= [{'EmailAddress': {'Address': _email}} for _email in self.cc]
         bccRecipients= [{'EmailAddress': {'Address': _email}} for _email in self.bcc]
-        if "access_token" in result:
+        if "access_token" in self.token:
             if self.DEBUG_MODE:
                 body_debug = f"to: {toRecipients} \n cc: {ccRecipients} \n bcc: {bccRecipients}"
                 body_text = f"{body_debug} \n\n {text}"
@@ -167,12 +170,12 @@ class AzureSendMail:
                 logger.info(email_msg)
                 return {'result': 'ok'}
             else:
-                r = requests.post(self.get_endpoint(), headers={'Authorization': 'Bearer ' + result['access_token']}, json=email_msg)
+                r = requests.post(self.get_endpoint(), headers={'Authorization': 'Bearer ' + self.token['access_token']}, json=email_msg)
                 if r.ok:
                     return {'result': 'ok'}
                 else:
                     return {'result': 'ko', 'error': r.text}
         else:
-            print(result.get("error"))
-            print(result.get("error_description"))
-            print(result.get("correlation_id"))
+            print(self.token.get("error"))
+            print(self.token.get("error_description"))
+            print(self.token.get("correlation_id"))
