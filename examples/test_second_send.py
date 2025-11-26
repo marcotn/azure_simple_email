@@ -15,6 +15,7 @@ azure_email.add_attachment('../README.md')
 azure_email.reply_to = [OVERRIDE_TEST_SENDER]
 azure_email.send_email(subject='test message', text='Hi, we are testing <h1>this<h1> python tool')
 
+azure_email.clear()
 #try to send multiple times with the same token
 azure_email.sender = OVERRIDE_TEST_SENDER
 azure_email.add_recipient(TEST_CC_RECIPIENT)

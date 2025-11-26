@@ -179,3 +179,11 @@ class AzureSendMail:
             print(self.token.get("error"))
             print(self.token.get("error_description"))
             print(self.token.get("correlation_id"))
+
+
+    def clear(self):
+        self.to = []
+        self.reply_to = []
+        self.cc = []
+        self.bcc = []
+        self.attachments = []
